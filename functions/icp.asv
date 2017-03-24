@@ -1,0 +1,27 @@
+function [T,corr,inlier,outlier] = icp(x, corr, data_mat,tree)
+    max_iter=5;
+    ransacCoef.minPtNum=4;
+    ransacCoef.iterNum=10;
+    ransacCoef.thInlrRatio=0.3;
+    ransacCoef.thDist=0.5;
+    T=eye(4);
+%     tree=kdtree_build(data_mat');
+%     [corr,~]=kdtree_nearest_neighbor(tree,x');
+    for iter=1:max_iter
+        y=data_mat(:,corr);
+        [T_tmp, ~, ~, corr] = ransac2( x,y,tree,data_mat,ransacCoef,@estimateRigidTransform,@estimateDistance);
+        tmp=T_tmp*[x;ones(1,size(x,2))];
+        x=tmp(1:3,:);
+        T=T_tmp*T;
+%         if norm(T_tmp-eye(4))<10^-10
+%             break;
+%         end
+    end
+    tmp=T*[x;ones(1,size(x,2))];
+    [corr,dist]=kdtree_nearest_neighbor(tree,tmp(1:3,:)');
+    [inlier,outlier]=deleteoutliers(dist,1);
+    if mean(dist(c_check(outlier)))<mean(dist(c_check(inlier)))
+        outlier=inlier;
+    end
+%      kdtree_delete(tree);
+end

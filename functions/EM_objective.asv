@@ -1,0 +1,15 @@
+function J=EM_objective(package)
+    global obj_R;
+    global obj_X;
+    r=round(size(package)/2);
+    W_t=package(1:r,:);
+    m=package(r+1,:)';
+    sigma=package(r+2;
+%     global obj_N;
+    [M,N]=size(obj_X);
+    J=0;
+    for iter=1:N
+        J=J+obj_R(iter)*log((w*pi)^(-M/2)*abs(sigma)^(-1/2)*exp((W_t*obj_X-m)'*pinv(sigma)*(W_t*obj_X-m)));
+    end
+
+end

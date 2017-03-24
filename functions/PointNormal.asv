@@ -1,0 +1,17 @@
+function points=PointNormal(x)
+    N=size(x,1);
+    points=[];
+%     normals=zeros(N,3);
+    tree=kdtree_build(x);%create kd tree
+    for iter=1:N
+     idx=kdtree_k_nearest_neighbors( tree, x(iter,:), 100);
+     X=x(idx,:)';
+     [~,D,~]=svd(X);
+     r=find_rank(diag(D));
+     if r==1
+         points=[points;x(iter,:)];
+     end
+%      normals(iter,:)=normnd(x(idx,:));
+    end
+    kdtree_delete(tree);
+end

@@ -1,0 +1,37 @@
+function out_pack=init_package(em_pack)
+%     for iter=1:numel(em_pack.rank_q)
+%         out_pack.rank_q(iter)=0;%outlier_pack.rank_q;
+%         out_pack.U_mat=[];%outlier_pack.U_mat;
+%         out_pack.D_mat=[];%outlier_pack.D_mat;
+%         out_pack.V_mat=[];%outlier_pack.V_mat;
+%         out_pack.Ut_mat=[];%outlier_pack.Ut_mat;
+%         out_pack.Vt_mat=[];%outlier_pack.Vt_mat;
+%         out_pack.in_table=[];%outlier_pack.in_table;
+%         out_pack.W_mat=[];%outlier_pack.W_mat;
+%         out_pack.m_value=[];%outlier_pack.m_value;
+%         out_pack.cov=[];%outlier_pack.cov;
+%         out_pack.P_c(iter)=0;%0.1;
+%         out_pack.R(:,iter)=zeros(size(em_pack.R(:,iter)));
+%         out_pack.Mdist(:,iter)=zeros(size(em_pack.R(:,iter)));
+%         out_pack.clusters=zeros(size(em_pack.clusters));
+%         out_pack.p_clusters=zeros(size(em_pack.clusters));
+%         out_pack.e_criteria(iter)=0;
+%     end
+        out_pack.rank_q=0;%outlier_pack.rank_q;
+        out_pack.U_mat=[];%outlier_pack.U_mat;
+        out_pack.D_mat=[];%outlier_pack.D_mat;
+        out_pack.V_mat=[];%outlier_pack.V_mat;
+        out_pack.Ut_mat=[];%outlier_pack.Ut_mat;
+        out_pack.Vt_mat=[];%outlier_pack.Vt_mat;
+        out_pack.in_table=[];%outlier_pack.in_table;
+        out_pack.W_mat=[];%outlier_pack.W_mat;
+        out_pack.m_value=[];%outlier_pack.m_value;
+        out_pack.cov=[];%outlier_pack.cov;
+        out_pack.P_c=0;%0.1;
+        out_pack.R=zeros(size(em_pack.R(:,iter)));
+        out_pack.Mdist(:,iter)=zeros(size(em_pack.R(:,iter)));
+        out_pack.clusters=zeros(size(em_pack.clusters));
+        out_pack.p_clusters=zeros(size(em_pack.clusters));
+        out_pack.e_criteria(iter)=0;
+
+end

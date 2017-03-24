@@ -1,0 +1,15 @@
+function Labeling = GCO_GetEnergy(Handle,varargin)
+% GCO_GetLabeling     Retrieve the current energy
+%     GCO_GetLabeling(Handle,i,j) returns energy of site i when having
+%     label l
+
+GCO_LoadLib();
+Start = int32(1);
+Count = gco_matlab('gco_getnumsites',Handle);
+if (length(varargin) > 2)
+    error('Too many input arguments.');
+end
+Start = int32(varargin{1}); Count = int32(1); end
+if (length(varargin) == 2), Count = int32(varargin{2}); end
+Labeling = gco_matlab('gco_getlabeling',Handle,Start,Count);
+end

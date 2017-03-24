@@ -1,0 +1,100 @@
+function [sol]  = spectral_matching_yj(M, labels, nodes)
+
+
+tic;
+
+n = length(labels);
+
+v = ones(length(nodes),1);
+
+v = v/norm(v);
+
+iterClimb_eigen = 30;
+
+maxSteps_IPFP = 50;
+
+
+nNodes = max(nodes);
+
+nLabels = max(labels);
+
+%% compute the first eigenvector (iterative power method)
+
+for i = 1:iterClimb_eigen
+  
+  v = M*v;
+
+  v = v/norm(v);
+  
+end
+
+%% double-stochastic normalization
+
+v0 = v;
+v1 = v;
+
+for k = 1:20
+
+    for j = 1:nNodes
+
+        f = find(nodes == j);
+
+        v1(f) = v0(f)/(sum(v0(f))+eps);
+
+    end
+
+    for j = 1:nLabels
+
+        f = find(labels == j);
+
+        v0(f) = v1(f)/(sum(v1(f))+eps);
+
+    end
+
+end
+
+v = (v1+v0)/2;
+
+%% --------------------------------------
+%initialization
+x_star = v;
+x = zeros(n,1);
+L = [1:n]';
+while 1
+    %step 3
+    max_num=0;
+    max_idx=0;
+    for iter=1:length(L)
+        if x_star(L(iter))>max_num
+            max_num=x_star(L(iter));
+            max_idx=L(iter);
+        end
+    end
+    if max_num>0
+       x(max_idx)=1;
+    else
+        break;
+    end
+    %step 4
+    ii=nodes(max_idx);
+    jj=labels(max_idx);
+    old_L=L;
+    for iter=1:length(old_L)
+      if nodes(old_L(iter))==ii || labels(old_L(iter))==jj
+          new_L=[];
+          if iter>1
+              new_L=[new_L;L(1:iter-1)];
+          end
+          if iter<length(L)
+              new_L=[new_L;L(iter+1:end)];
+          end
+          L=new_L;
+      end
+    end
+    %step 5
+    if isempty(L)
+        break;
+    end
+end
+sol=x;
+end

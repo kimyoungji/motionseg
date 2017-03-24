@@ -1,0 +1,111 @@
+function [res_clusters,res_neighbors,res_dist]=subspace_em(X_ori,group_num,x1_mesh,y_data)
+    % x: input data k x N
+    % y: data matrix (k*n) x N
+    % init_clusters: initial clusters
+    % group_num: number of groups
+    %[k,N]=size(x);
+
+    k=4;
+    N=size(X_ori,2);
+    n=20;
+    
+    %% initialize
+    
+    em_pack.rank_q=ones(1,group_num);
+    em_pack.dists=ones(1,group_num);
+    em_pack.W_mat={};
+    em_pack.cov={};
+    em_pack.P_c=ones(1,group_num);
+    em_pack.R=zeros(N,group_num);
+    em_pack.Mdist=zeros(N,group_num);
+    em_pack.e_criteria=zeros(group_num,1);
+%     em_pack.Transform_mat={};%eye(4);%save Trans_mat
+
+ 
+    
+    %% EM
+    neighbors=[];%init_neighbors;
+    Data_mat=[];
+%     densities=ones(N,11);
+    X_mat=[X_ori(1:3,:);ones(1,N)];
+    m_seq_num=15;
+    for iter=1:n
+        %arrange X_mat, Data_mat and neighbors
+%         x_for_neighbors=X_mat(end-2:end,:);
+        if iter>1
+            x_for_neighbors=X_mat(end-3:end-1,:);%x_for_neighbors=xupdate_whole(X_mat(1:3,:),Data_mat(end-2:end,:),neighbors(end,:),em_pack.clusters,group_num);
+        else
+            x_for_neighbors=X_mat(end-3:end-1,:);
+        end
+        if iter>m_seq_num%%mod(iter,m_seq_num)==0
+            X_mat=[X_mat(1:k,:);X_mat(k*2+1:end,:)];%X_mat(5:end,:);%
+            Data_mat=Data_mat(4:end,:);
+            neighbors=neighbors(2:end,:);
+        end
+
+        %load data
+        if nargin == 3
+            % clouds from img
+            ff=sprintf('./rigid_dataset/stand_d2/%d.png',1+iter);
+            IMG=imread(ff);
+            x=img_to_xyz(IMG,1,1);%./100;
+%             % clouds from mat
+%             ff=sprintf('./synthetic/plane_rot2/pt_%d.mat',iter+1);
+%             load(ff);
+%             x=a';
+            if ~isempty(Data_mat)
+                if size(x,1)>size(Data_mat,2)
+                    Data_mat=[Data_mat,zeros(size(Data_mat,1),size(x,1)-size(Data_mat,2))];
+                elseif size(x,1)<size(Data_mat,2)
+                    x=[x;zeros(size(Data_mat,2)-size(x,1),k-1)];
+                end
+            end
+        else
+            x=y_data(3*iter+1:3*iter+3,:)';
+        end
+        %update nearest neighbors
+        Data_mat=[Data_mat;x'];
+        tree=kdtree_build(x);%create kd tree
+        tmp_neighbors=[];
+        [tmp_neighbors,dist]=kdtree_nearest_neighbor(tree,x_for_neighbors');
+        kdtree_delete(tree);
+        neighbors=[neighbors;tmp_neighbors'];
+        X_mat=[X_mat;Data_mat(end-2:end,tmp_neighbors);ones(1,N)];
+        
+        if iter==1
+            em_pack.clusters=ones(N,1);
+%             em_pack.p_clusters=em_pack.clusters;
+            em_pack.R=zeros(N,group_num);%/(group_num+1);
+            tree=kdtree_build(X_mat(end-2*k+1:end-k-1,:)');
+            for iter3=1:N
+                for iter2=1:group_num
+                    if(em_pack.clusters(iter3)==iter2)
+                        em_pack.R(iter3,iter2)=1;
+                    end
+                end
+            end
+            kdtree_delete(tree);
+
+        end
+%         em_pack.clusters=tmp_clusters;
+        [X_mat,neighbors,em_pack,tmp_clusters,last_clusters]=em_iteration(X_mat,Data_mat,neighbors,em_pack,x1_mesh,iter);
+
+        group_num=max(tmp_clusters);%size(em_pack.R,2);
+        str=sprintf('exp_%d.ply',iter);
+        save_ply(str,last_clusters,X_mat(end-k+1:end,:));
+        
+        [X_mat,neighbors,em_pack,ax_points]=xupdate_whole(X_mat,Data_mat,neighbors,tmp_clusters,max(tmp_clusters),em_pack,iter);
+        str=sprintf('ax_%d.ply',iter);
+        save_ax_ply(str,ax_points);
+    
+    end
+    res_clusters=last_clusters;
+    res_neighbors=neighbors(end,:);
+    res_dist=zeros(1,N);
+    for iter=1:N
+        d=(Data_mat(end-2:end,res_neighbors(iter))-Data_mat(end-2:end,iter));
+        res_dist(iter)=(d'*d);
+    end
+    plot_corr(X_mat,res_clusters);
+
+end
